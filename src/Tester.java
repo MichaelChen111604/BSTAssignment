@@ -1,13 +1,15 @@
 public class Tester {
     public static void main(String[] args) {
         BST<String> test = new BST<String>();
-        for (char c = 'a'; c <= 'z'; c++) {
-            test.insert(String.valueOf(c));
-        }
-        for (char c = 'z'; c >= 'a'; c--) {
-            test.insert(String.valueOf(c));
-        }
+        test.insert("Hello");
+        test.insert("There!");
+        test.insert("General");
+
+        test.insert("Kenobi!");
+        test.insert("You");
+        test.insert("are");
+        test.insert("a bold one.");
         System.out.println(test.inOrderString());
-        System.out.println(test.countLeaves());
+        System.out.println(test.height());
     }
 }

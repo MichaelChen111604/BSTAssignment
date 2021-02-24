@@ -7,9 +7,29 @@ public class BST<E extends Comparable<E>> {
         size = 0;
     }
 
+    public boolean find(E value) {
+        return find(root, value);
+    }
+    private boolean find(BSTNode<E> rt, E value) {
+        if (rt == null) return false;
+        else if (rt.getValue() == value) return true;
+        return (find(rt.getLeft(), value) || find(rt.getRight(), value));
+    }
+
+    public int height() {
+        return height(0, root);
+    }
+    private int height(int prevHeight, BSTNode<E> rt) {
+        if (rt == null) return prevHeight;
+        else return Math.max(height(1 + prevHeight, rt.getLeft()),
+                height(1 + prevHeight, rt.getRight()));
+    }
+
     public void insert(E value) {
-        root = insert(root, value);
-        size++;
+        if (!find(value)) {
+            root = insert(root, value);
+            size++;
+        }
     }
     private BSTNode<E> insert(BSTNode<E> rt, E value) {
         if (rt == null) return new BSTNode<E>(value);
