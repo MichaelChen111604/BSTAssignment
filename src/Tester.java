@@ -2,18 +2,29 @@ import java.util.Random;
 public class Tester {
     public static void main(String[] args) {
         BST<Character> test = new BST<Character>();
-        test.insert('a');
-        test.insert('b');
-        test.insert('c');
+        // yi rr zi jr zi cr ti qr oi nr ki rr di jr si vr ii ur ui hr qi gr xi gr ki kr gi vr ji dr ai vr ii lr ki sr
+        test.insert('y');
+        test.delete('r');
+        test.insert('z');
+        test.delete('j');
+        test.insert('z');
+        test.delete('c');
+        test.insert('t');
+        test.delete('q');
+        test.insert('o');
+        test.delete('n');
+        check(test);
+        test.insert('k');
+        test.delete('r');
         test.insert('d');
-        test.insert('e');
-        test.insert('f');
-        test.insert('g');
-        test.insert('h');
+        test.delete('j');
+        test.insert('s');
+        test.delete('v');
         test.insert('i');
-        test.insert('j');
-        System.out.println(test.depthFirstString());
-        System.out.println(test.breadthFirstString());
+        test.delete('u');
+        test.insert('u');
+        test.delete('h');
+        check(test);
     }
     public static void check(BST<Character> input) {
         System.out.println(input.depthFirstString());
@@ -34,7 +45,7 @@ public class Tester {
                 insertions = insertions.concat(String.valueOf(newChar) + "i ");
                 char newChar2 = alphabet.charAt(r.nextInt(alphabet.length()));
                 tester.delete(newChar2);
-                insertions = insertions.concat(String.valueOf(newChar2) + "r ");
+                insertions = insertions.concat(String.valueOf(newChar2) + "d ");
                 if (!tester.isBalanced()) {
                     System.out.println("Ya fucked up");
                     System.out.println(insertions);
