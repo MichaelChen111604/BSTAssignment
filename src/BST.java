@@ -33,6 +33,7 @@ public class BST<E extends Comparable<E>> {
             right = newRight;
         }
         public void setHeight(int newHeight) { height = newHeight; }
+        public void setValue(F newValue) { value = newValue; }
 
         public boolean isLeaf() {
             return (left == null && right == null);
@@ -183,7 +184,7 @@ public class BST<E extends Comparable<E>> {
                 BSTNode<E> replacement = rt.getRight();
                 while (replacement.getLeft() != null) replacement = replacement.getLeft();
                 // copy replacement into rt then delete rt
-                rt.value = replacement.value;
+                rt.setValue(replacement.getValue());
                 // delete function has to be used in case replacement has children
                 // replacement has at most one (right) child, so the recursion will end on this call
                 rt.setRight(delete(rt.getRight(), replacement.getValue()));
