@@ -51,7 +51,7 @@ public class BST<E extends Comparable<E>> {
         }
     }
 
-    private BSTNode<E> root;
+    BSTNode<E> root;
     private int size;
 
     public BST() {
@@ -59,9 +59,8 @@ public class BST<E extends Comparable<E>> {
         size = 0;
     }
 
-    public int height() {
-        return safeHeight(root);
-    }
+    public int getSize() { return size; }
+    public int height() { return safeHeight(root); }
     // can be called on null nodes
     private int safeHeight(BSTNode<E> rt) {
         if (rt == null) return 0;
@@ -72,11 +71,13 @@ public class BST<E extends Comparable<E>> {
         return find(root, value);
     }
     private boolean find(BSTNode<E> rt, E value) {
-        if (rt == null) return false;
-        else if (rt.getValue() == value) return true;
-        return (find(rt.getLeft(), value) || find(rt.getRight(), value));
+        if (rt == null) { return false; }
+        else if (rt.getValue().compareTo(value) == 0) { return true; }
+        else if (rt.getValue().compareTo(value) < 0) { return find(rt.getRight(), value); }
+        else return find(rt.getLeft(), value);
     }
 
+    // utility functions used in balancing
     // pivot must have a right with a right
     private BSTNode<E> leftRotate(BSTNode<E> pivot) {
         // this node becomes the parent of pivot
@@ -85,6 +86,7 @@ public class BST<E extends Comparable<E>> {
         pivotParent.setLeft(pivot);
         pivot.setHeight(1 + Math.max(safeHeight(pivot.getLeft()), safeHeight(pivot.getRight())));
         pivotParent.setHeight(1 + Math.max(safeHeight(pivotParent.getLeft()), safeHeight(pivotParent.getRight())));
+        if (pivot == root) root = pivotParent;
         return pivotParent;
     }
     // pivot must have a left with a left
@@ -95,6 +97,7 @@ public class BST<E extends Comparable<E>> {
         pivotParent.setRight(pivot);
         pivot.setHeight(1 + Math.max(safeHeight(pivot.getLeft()), safeHeight(pivot.getRight())));
         pivotParent.setHeight(1 + Math.max(safeHeight(pivotParent.getLeft()), safeHeight(pivotParent.getRight())));
+        if (pivot == root) root = pivotParent;
         return pivotParent;
     }
 
@@ -105,13 +108,7 @@ public class BST<E extends Comparable<E>> {
     }
 
     public void insert(E value) {
-        if (!find(value)) {
-            if (root == null) {
-                root = new BSTNode<E>(value);
-                size++;
-            }
-            else root = insert(root, value);
-        }
+        if (!find(value)) root = insert(root, value);
     }
     private BSTNode<E> insert(BSTNode<E> rt, E value) {
         // Find the correct insertion spot with recursion
@@ -119,20 +116,20 @@ public class BST<E extends Comparable<E>> {
             size++;
             return (new BSTNode<E>(value));
         }
-        if (value.compareTo(rt.getValue()) < 0)
-            rt.setLeft(insert(rt.getLeft(), value));
-        else if (value.compareTo(rt.getValue()) > 0)
-            rt.setRight(insert(rt.getRight(), value));
-        // don't do anything if node is already in tree
-        else return rt;
 
-        // This code only executes if rt is an ancestor of the newly-inserted node
+        // this code only executes if rt is an ancestor of the newly-inserted node
+        if (value.compareTo(rt.getValue()) < 0)
+            { rt.setLeft(insert(rt.getLeft(), value)); }
+        else if (value.compareTo(rt.getValue()) > 0)
+            { rt.setRight(insert(rt.getRight(), value)); }
+
+        // we can call setHeight here because the lower nodes are guaranteed to have correct height
         rt.setHeight(1 + Math.max(safeHeight(rt.getLeft()), safeHeight(rt.getRight())));
         // Maintain AVL Balance
         int balanceFactor = balanceFactor(rt);
         if (balanceFactor == 2) {
-            // Right right (insertion must imbalance the node two levels up from inserted node)
-            if (rt.getRight().getValue().compareTo(value) < 0)
+            // Right right
+            if (balanceFactor(rt.getRight()) >= 0)
                 return leftRotate(rt);
             // Right left
             else {
@@ -142,7 +139,7 @@ public class BST<E extends Comparable<E>> {
         }
         if (balanceFactor == -2) {
             // Left left
-            if (rt.getLeft().getValue().compareTo(value) > 0)
+            if (balanceFactor(rt.getLeft()) <= 0)
                 return rightRotate(rt);
             // Left right
             else {
@@ -155,19 +152,22 @@ public class BST<E extends Comparable<E>> {
     }
 
     public E delete(E value) {
-        BSTNode<E> deleted = delete(root, value);
-        if (deleted == null) return null;
-        size--;
-        return deleted.getValue();
+        boolean deleted = find(value);
+        delete(root, value);
+        if (deleted) {
+            size--;
+            return value;
+        }
+        return null;
     }
     private BSTNode<E> delete(BSTNode<E> rt, E value) {
         // find the correct deletion spot with recursion
         if (rt == null)
-            return null;
+            { return null;}
         if (rt.getValue().compareTo(value) < 0)
-            rt.setRight(delete(rt.getRight(), value));
+            { rt.setRight(delete(rt.getRight(), value)); }
         else if (rt.getValue().compareTo(value) > 0)
-            rt.setLeft(delete(rt.getLeft(), value));
+            { rt.setLeft(delete(rt.getLeft(), value)); }
         else {
             // <2 children
             if (rt.getLeft() == null) {
@@ -184,35 +184,39 @@ public class BST<E extends Comparable<E>> {
                 BSTNode<E> replacement = rt.getRight();
                 while (replacement.getLeft() != null) replacement = replacement.getLeft();
                 // copy replacement into rt then delete rt
-                rt.setValue(replacement.getValue());
+                 rt.setValue(replacement.getValue());
                 // delete function has to be used in case replacement has children
                 // replacement has at most one (right) child, so the recursion will end on this call
                 rt.setRight(delete(rt.getRight(), replacement.getValue()));
             }
         }
         // keep balance- this code only executes if there was a deletion
-        if (rt == null) return null;
+        if (rt == null) {
+            return null;
+        }
         // the children of rt have correct heights at this point because this code runs on them first
         rt.setHeight(1 + Math.max(safeHeight(rt.getLeft()), safeHeight(rt.getRight())));
         // AVL balancing
         int balanceFactor = balanceFactor(rt);
         if (balanceFactor == 2) {
-            // Right right
-            if (balanceFactor(rt.getRight()) > 0)
-                return leftRotate(rt);
             // Right left
-            else {
+            if (balanceFactor(rt.getRight()) < 0) {
                 rt.setRight(rightRotate(rt.getRight()));
+                return leftRotate(rt);
+            }
+            // Right right
+            else {
                 return leftRotate(rt);
             }
         }
         if (balanceFactor == -2) {
-            // Left left
-            if (balanceFactor(rt.getLeft()) < 0)
-                return rightRotate(rt);
-                // Left right
-            else {
+            // Left right
+            if (balanceFactor(rt.getLeft()) > 0) {
                 rt.setLeft(leftRotate(rt.getLeft()));
+                return rightRotate(rt);
+            }
+            // Left left
+            else {
                 return rightRotate(rt);
             }
         }
@@ -221,7 +225,6 @@ public class BST<E extends Comparable<E>> {
     }
 
     public boolean isBalanced() {
-        if (root == null) return true;
         return isBalanced(root);
     }
     private boolean isBalanced(BSTNode<E> rt) {
@@ -234,38 +237,37 @@ public class BST<E extends Comparable<E>> {
     }
 
     public boolean isPerfect() {
-        if (root == null) return true;
         return isPerfect(root);
     }
     private boolean isPerfect(BSTNode<E> rt) {
         if (rt == null) return true;
         else {
-            if (safeHeight(rt.getLeft()) - safeHeight(rt.getRight()) != 0)
+            if (safeHeight(rt.getLeft()) != safeHeight(rt.getRight()))
                 return false;
             return isPerfect(rt.getLeft()) && isPerfect(rt.getRight());
         }
     }
 
-    public String depthFirstString() {
-        return depthFirstString(root);
+    public String inOrder() {
+        return inOrder(root);
     }
-    private String depthFirstString(BSTNode<E> rt) {
+    private String inOrder(BSTNode<E> rt) {
         if (rt == null) return "";
         String out = "(";
-        out += depthFirstString(rt.getLeft()) + "-";
+        out += inOrder(rt.getLeft()) + "-";
         out += rt.getValue() + "-";
-        out += depthFirstString(rt.getRight());
+        out += inOrder(rt.getRight());
         out += ")";
         return out;
     }
 
-    public String breadthFirstString() {
+    public String bfOrder() {
         String out = "";
         Queue<BSTNode<E>> nodeQueue = new LinkedList<BSTNode<E>>();
         BSTNode<E> nextNode;
         if (root != null) nodeQueue.add(root);
         while (!nodeQueue.isEmpty()) {
-            nextNode = nodeQueue.poll();
+            nextNode = nodeQueue.remove();
             out += nextNode.getValue().toString() + " ";
             if (nextNode.getLeft() != null) nodeQueue.add(nextNode.getLeft());
             if (nextNode.getRight() != null) nodeQueue.add(nextNode.getRight());
@@ -280,5 +282,13 @@ public class BST<E extends Comparable<E>> {
         if (rt == null) return 0;
         if (rt.getHeight() == 1) return 1;
         return countLeaves(rt.getLeft()) + countLeaves(rt.getRight());
+    }
+
+    public int countParentNodes() {
+        return countParentNodes(root);
+    }
+    private int countParentNodes(BSTNode<E> rt) {
+        if (rt == null || rt.isLeaf()) return 0;
+        return 1 + countParentNodes(rt.getLeft()) + countParentNodes(rt.getRight());
     }
 }
